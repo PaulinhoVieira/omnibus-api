@@ -3,7 +3,6 @@ package br.com.vendas.passagem.omnibus.domain;
 import lombok.*;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 import br.com.vendas.passagem.omnibus.domain.enums.TipoDocumento;
 import jakarta.persistence.*;
@@ -19,8 +18,8 @@ public class Documento {
     
     @Id
     @Column(name = "id")
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @OneToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "usuario_id", nullable = false, unique = true)

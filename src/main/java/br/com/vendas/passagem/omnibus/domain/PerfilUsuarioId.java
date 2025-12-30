@@ -1,7 +1,6 @@
 package br.com.vendas.passagem.omnibus.domain;
 
 import java.io.Serializable;
-import java.util.UUID;
 
 import jakarta.persistence.Embeddable;
 import lombok.AllArgsConstructor;
@@ -17,6 +16,6 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class PerfilUsuarioId implements Serializable {
-    private UUID usuarioId;
+    private Long usuarioId;
     private String perfil;
 }

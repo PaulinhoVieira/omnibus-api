@@ -2,7 +2,6 @@ package br.com.vendas.passagem.omnibus.domain;
 
 import lombok.*;
 
-import java.util.UUID;
 import java.util.List;
 
 import jakarta.persistence.*;
@@ -18,8 +17,8 @@ public class Empresa {
     
     @Id
     @Column(name = "id")
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "usuario_dono_id", nullable = false)

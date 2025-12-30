@@ -5,7 +5,6 @@ import lombok.*;
 import java.io.ObjectInputFilter.Status;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 import jakarta.persistence.*;
 
@@ -19,8 +18,8 @@ import jakarta.persistence.*;
 public class Passagen {
     @Id
     @Column(name = "id")
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "viagem_id", nullable = false)

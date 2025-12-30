@@ -3,7 +3,6 @@ package br.com.vendas.passagem.omnibus.domain;
 import lombok.*;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 import br.com.vendas.passagem.omnibus.domain.enums.TipoPerfil;
 
@@ -24,8 +23,8 @@ public class Usuario {
 
     @Id
     @Column(name = "id")
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @Column(name = "nome", nullable = false)
     private String nome;
