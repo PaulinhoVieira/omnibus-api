@@ -46,10 +46,9 @@ public class UsuarioService {
         usuarioRepository.delete(obterPorId(id));
     }
 
+    @Transactional(readOnly = true)
     public Usuario obterPorId(Long id) {
         return usuarioRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Usuário não encontrado com id: " + id));
-    }
-
-    
+    } 
 }
