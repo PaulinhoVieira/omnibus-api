@@ -302,3 +302,31 @@ Content-Type: application/json
 ## 🌐 URLs Base
 - **Desenvolvimento**: `http://localhost:8080`
 - **Documentação Swagger**: `http://localhost:8080/swagger-ui.html`
+
+---
+
+## 📤 Upload de Documentos (MinIO)
+
+Endpoint exposto: `POST /usuario/{id}/documentos` (multipart/form-data)
+
+### Exemplo via cURL
+```bash
+curl -X POST "http://localhost:8080/usuario/1/documentos" \
+  -F "tipo=RG" \
+  -F "arquivo=@/caminho/para/arquivo.pdf"
+```
+
+### Exemplo via HTTP (texto)
+```http
+POST http://localhost:8080/usuario/1/documentos
+Content-Type: multipart/form-data
+
+Form-Data:
+- tipo: RG
+- arquivo: (selecionar um arquivo .pdf/.jpg/.png)
+```
+
+### Observações
+- `tipo` aceita valores do enum: RG, CNH, PASSAPORTE, CARTEIRA_ESTUDANTE, CNPJ_DOC.
+- Bucket configurado: `documentos-omnibus` (criado automaticamente se não existir).
+- Tamanho máximo de upload: 5MB (configurado em `spring.servlet.multipart.*`).
