@@ -14,19 +14,20 @@ import br.com.vendas.passagem.omnibus.repository.UsuarioRepository;
 @Service
 public class EmpresaService {
     
-    private EmpresaRepository empresaRepository;
-    private UsuarioRepository usuarioRepository;
-    private EmpresaMapper empresaMapper;
+    private final EmpresaRepository empresaRepository;
+    private final UsuarioRepository usuarioRepository;
+    private final EmpresaMapper empresaMapper;
 
 
-    public EmpresaService(EmpresaRepository empresaRepository, EmpresaMapper empresaMapper) {
+    public EmpresaService(EmpresaRepository empresaRepository, UsuarioRepository usuarioRepository, EmpresaMapper empresaMapper) {
         this.empresaRepository = empresaRepository;
+        this.usuarioRepository = usuarioRepository;
         this.empresaMapper = empresaMapper;
     }
 
     @Transactional
     public EmpresaResponseDTO criar(EmpresaRequestDTO empresaRequestDTO) {
-        Usuario usuarioDono = obterUsuarioPorId(empresaRequestDTO.usuarioDonoId()); //TODO: na verdade vai criar o usuario vai ter que pesistir depois
+        Usuario usuarioDono = obterUsuarioPorId(empresaRequestDTO.usuarioDonoId());
         Empresa empresaEntity = empresaMapper.toEntity(empresaRequestDTO, usuarioDono);
         return empresaMapper.toResponse(empresaRepository.save(empresaEntity));
     }
