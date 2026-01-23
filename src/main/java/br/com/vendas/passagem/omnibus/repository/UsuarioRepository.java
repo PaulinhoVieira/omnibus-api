@@ -12,5 +12,9 @@ import br.com.vendas.passagem.omnibus.domain.Usuario;
 public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     @Query("select u from Usuario u where u.email = :login")
     UserDetails findByLogin(@Param("login") String login);
+    
     Optional<Usuario> findByEmail(String email);
+    
+    @Query("select u from Usuario u left join fetch u.empresas where u.email = :email")
+    Optional<Usuario> findByEmailWithEmpresas(@Param("email") String email);
 }

@@ -52,14 +52,14 @@ public class Usuario implements UserDetails {
     @Column(name = "perfil")
     private Set<TipoPerfil> perfis = new HashSet<>();
 
-    @OneToMany(mappedBy = "usuarioDono", cascade = CascadeType.ALL)
-    private transient List<Empresa> empresas;
+    @OneToMany(mappedBy = "usuarioDono", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Empresa> empresas;
 
-    @OneToMany(mappedBy = "passageiro", cascade = CascadeType.ALL)
-    private transient List<Passagen> passagens;
+    @OneToMany(mappedBy = "passageiro", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Passagen> passagens;
 
-    @OneToOne(mappedBy = "usuario", cascade = CascadeType.ALL)
-    private transient Documento documento;
+    @OneToOne(mappedBy = "usuario", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Documento documento;
 
     // Métodos utilitários para gerenciar perfis
     public boolean possuiPerfil(TipoPerfil perfil) {

@@ -36,8 +36,8 @@ public class AuthenticationController {
 
     @PostMapping("/login")
     public ResponseEntity<String> login(@RequestBody AuthenticationDTO authRequest) {
-        // Buscar usuário para validar perfil
-        Usuario usuario = usuarioRepository.findByEmail(authRequest.email())
+        // Buscar usuário para validar perfil (com empresas se necessário)
+        Usuario usuario = usuarioRepository.findByEmailWithEmpresas(authRequest.email())
                 .orElseThrow(() -> new BadCredentialsException("Credenciais inválidas"));
 
         // Validar se o usuário possui o perfil solicitado
@@ -47,7 +47,7 @@ public class AuthenticationController {
 
         // Se o perfil for EMPRESA, validar se tem empresa associada
         if (authRequest.perfilDesejado() == TipoPerfil.EMPRESA && (usuario.getEmpresas() == null || usuario.getEmpresas().isEmpty())) {
-            throw new BadCredentialsException("Você não possui empresa cadastrada");
+            throw new BadCredentialsException("Você não possui empresa cadastrada" + authRequest.perfilDesejado());
         }
 
         // Autenticar

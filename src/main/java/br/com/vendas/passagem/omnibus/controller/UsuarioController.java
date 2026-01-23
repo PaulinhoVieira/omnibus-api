@@ -52,21 +52,21 @@ public class UsuarioController {
         return ResponseEntity.ok(usuario);
     }
 
-    @PreAuthorize("hasRole('ADMIN, PASSAGEIRO')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'PASSAGEIRO')")
     @PutMapping("/{id}")
     public ResponseEntity<UsuarioResponseDTO> atualizar(@PathVariable Long id, @Valid @RequestBody UsuarioRequestDTO request) {
         UsuarioResponseDTO atualizado = usuarioService.atualizarUser(id, request);
         return ResponseEntity.ok(atualizado);
     }
 
-    @PreAuthorize("hasRole('ADMIN, PASSAGEIRO')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'PASSAGEIRO')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
         usuarioService.deletarUser(id);
         return ResponseEntity.noContent().build();
     }
 
-    @PreAuthorize("hasRole('ADMIN, PASSAGEIRO')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'PASSAGEIRO')")
     @PostMapping(path = "/{id}/documentos", consumes = {"multipart/form-data"})
     public ResponseEntity<DocumentoResponseDTO> uploadDocumento(
             @PathVariable Long id,

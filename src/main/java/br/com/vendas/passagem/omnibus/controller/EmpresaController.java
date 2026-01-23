@@ -27,8 +27,8 @@ public class EmpresaController {
     public EmpresaController(EmpresaService empresaService) {
         this.empresaService = empresaService;
     }
-
-    @PreAuthorize("hasRole('ADMIN, PASSAGEIRO')")
+     // par qualquer role autenticado admin e passageiro
+    @PreAuthorize("hasAnyRole('ADMIN', 'PASSAGEIRO')")
     @PostMapping
     public ResponseEntity<EmpresaResponseDTO> criar(@Valid @RequestBody EmpresaRequestDTO request) {
         EmpresaResponseDTO created = empresaService.criar(request);
@@ -42,14 +42,14 @@ public class EmpresaController {
         return ResponseEntity.ok(empresa);
     }
 
-    @PreAuthorize("hasRole('ADMIN, EMPRESA')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'EMPRESA')")
     @PutMapping("/{id}")
     public ResponseEntity<EmpresaResponseDTO> atualizar(@PathVariable Long id, @Valid @RequestBody EmpresaRequestDTO request) {
         EmpresaResponseDTO atualizada = empresaService.atualizar(id, request);
         return ResponseEntity.ok(atualizada);
     }
 
-    @PreAuthorize("hasRole('ADMIN, EMPRESA')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'EMPRESA')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
         empresaService.deletar(id);
