@@ -1,9 +1,11 @@
 package br.com.vendas.passagem.omnibus.service;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import br.com.vendas.passagem.omnibus.domain.Usuario;
+import br.com.vendas.passagem.omnibus.domain.enums.TipoPerfil;
 import br.com.vendas.passagem.omnibus.dto.mapper.UsuarioMapper;
 import br.com.vendas.passagem.omnibus.dto.request.UsuarioRequestDTO;
 import br.com.vendas.passagem.omnibus.dto.response.UsuarioResponseDTO;
@@ -14,15 +16,19 @@ public class UsuarioService {
     
     private final UsuarioRepository usuarioRepository;
     private final UsuarioMapper usuarioMapper;
+    private final PasswordEncoder passwordEncoder;
 
-    public UsuarioService(UsuarioRepository usuarioRepository, UsuarioMapper usuarioMapper) {
+    public UsuarioService(UsuarioRepository usuarioRepository, UsuarioMapper usuarioMapper, PasswordEncoder passwordEncoder) {
         this.usuarioRepository = usuarioRepository;
         this.usuarioMapper = usuarioMapper;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Transactional
     public UsuarioResponseDTO criarUser(UsuarioRequestDTO usuario) {
         Usuario userEntity = usuarioMapper.toEntity(usuario);
+        // Criptografar senha antes de salvar
+        userEntity.setSenha(passwordEncoder.encode(usuario.senha()));
         return usuarioMapper.toDTO(usuarioRepository.save(userEntity));
     }
 
@@ -36,7 +42,7 @@ public class UsuarioService {
         Usuario usuarioExistente = obterPorId(id);
         usuarioExistente.setNome(usuarioAtualizado.nome());
         usuarioExistente.setEmail(usuarioAtualizado.email());
-        usuarioExistente.setSenha(usuarioAtualizado.senha());//TODO: criptografar depois que por o spring security
+        usuarioExistente.setSenha(passwordEncoder.encode(usuarioAtualizado.senha()));
         usuarioExistente.setCpf(usuarioAtualizado.cpf());
         return usuarioMapper.toDTO(usuarioRepository.save(usuarioExistente));
     }
@@ -46,9 +52,16 @@ public class UsuarioService {
         usuarioRepository.delete(obterPorId(id));
     }
 
-    @Transactional(readOnly = true)
     public Usuario obterPorId(Long id) {
         return usuarioRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Usuário não encontrado com id: " + id));
-    } 
+    }
+
+    // Método para adicionar perfil EMPRESA quando usuário criar empresa
+    @Transactional
+    public void promoverParaEmpresa(Long usuarioId) {
+        Usuario usuario = obterPorId(usuarioId);
+        usuario.adicionarPerfil(TipoPerfil.EMPRESA);
+        usuarioRepository.save(usuario);
+    }
 }

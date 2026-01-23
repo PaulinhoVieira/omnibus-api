@@ -3,6 +3,9 @@ package br.com.vendas.passagem.omnibus.exception;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -242,6 +245,60 @@ public class GlobalExceptionHandler {
         );
         
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
+
+    /**
+     * Trata exceções de credenciais inválidas (login/senha incorretos).
+     */
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<ErrorResponseDTO> handleBadCredentialsException(
+            BadCredentialsException ex, 
+            WebRequest request) {
+        
+        ErrorResponseDTO error = new ErrorResponseDTO(
+            HttpStatus.UNAUTHORIZED.value(),
+            "Unauthorized",
+            ex.getMessage(),
+            request.getDescription(false).replace("uri=", "")
+        );
+        
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
+    }
+
+    /**
+     * Trata exceções de autenticação genéricas.
+     */
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<ErrorResponseDTO> handleAuthenticationException(
+            AuthenticationException ex, 
+            WebRequest request) {
+        
+        ErrorResponseDTO error = new ErrorResponseDTO(
+            HttpStatus.UNAUTHORIZED.value(),
+            "Unauthorized",
+            "Falha na autenticação. Verifique suas credenciais.",
+            request.getDescription(false).replace("uri=", "")
+        );
+        
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
+    }
+
+    /**
+     * Trata exceções de acesso negado (usuário autenticado mas sem permissão).
+     */
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ErrorResponseDTO> handleAccessDeniedException(
+            AccessDeniedException ex, 
+            WebRequest request) {
+        
+        ErrorResponseDTO error = new ErrorResponseDTO(
+            HttpStatus.FORBIDDEN.value(),
+            "Forbidden",
+            "Você não tem permissão para acessar este recurso",
+            request.getDescription(false).replace("uri=", "")
+        );
+        
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
     }
 
     /**

@@ -1,6 +1,8 @@
 package br.com.vendas.passagem.omnibus.controller;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.multipart.MultipartFile;
 
+import br.com.vendas.passagem.omnibus.domain.Usuario;
 import br.com.vendas.passagem.omnibus.domain.enums.TipoDocumento;
 import br.com.vendas.passagem.omnibus.dto.request.UsuarioRequestDTO;
 import br.com.vendas.passagem.omnibus.dto.response.DocumentoResponseDTO;
@@ -35,30 +38,35 @@ public class UsuarioController {
         this.documentoService = documentoService;
     }
 
-    @PostMapping
-    public ResponseEntity<UsuarioResponseDTO> criar(@Valid @RequestBody UsuarioRequestDTO request) {
-        UsuarioResponseDTO created = usuarioService.criarUser(request);
-        return ResponseEntity.ok(created);
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/me")
+    public ResponseEntity<UsuarioResponseDTO> obterUsuarioLogado(@AuthenticationPrincipal Usuario usuarioLogado) {
+        UsuarioResponseDTO usuario = usuarioService.obterDTOporId(usuarioLogado.getId());
+        return ResponseEntity.ok(usuario);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/{id}")
     public ResponseEntity<UsuarioResponseDTO> buscarPorId(@PathVariable Long id) {
         UsuarioResponseDTO usuario = usuarioService.obterDTOporId(id);
         return ResponseEntity.ok(usuario);
     }
 
+    @PreAuthorize("hasRole('ADMIN, PASSAGEIRO')")
     @PutMapping("/{id}")
     public ResponseEntity<UsuarioResponseDTO> atualizar(@PathVariable Long id, @Valid @RequestBody UsuarioRequestDTO request) {
         UsuarioResponseDTO atualizado = usuarioService.atualizarUser(id, request);
         return ResponseEntity.ok(atualizado);
     }
 
+    @PreAuthorize("hasRole('ADMIN, PASSAGEIRO')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
         usuarioService.deletarUser(id);
         return ResponseEntity.noContent().build();
     }
 
+    @PreAuthorize("hasRole('ADMIN, PASSAGEIRO')")
     @PostMapping(path = "/{id}/documentos", consumes = {"multipart/form-data"})
     public ResponseEntity<DocumentoResponseDTO> uploadDocumento(
             @PathVariable Long id,

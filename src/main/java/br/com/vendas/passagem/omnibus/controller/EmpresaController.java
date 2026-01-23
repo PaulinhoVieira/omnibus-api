@@ -1,6 +1,7 @@
 package br.com.vendas.passagem.omnibus.controller;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -27,24 +28,28 @@ public class EmpresaController {
         this.empresaService = empresaService;
     }
 
+    @PreAuthorize("hasRole('ADMIN, PASSAGEIRO')")
     @PostMapping
     public ResponseEntity<EmpresaResponseDTO> criar(@Valid @RequestBody EmpresaRequestDTO request) {
         EmpresaResponseDTO created = empresaService.criar(request);
         return ResponseEntity.ok(created);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/{id}")
     public ResponseEntity<EmpresaResponseDTO> buscarPorId(@PathVariable Long id) {
         EmpresaResponseDTO empresa = empresaService.obterPorIdResponseDTO(id);
         return ResponseEntity.ok(empresa);
     }
 
+    @PreAuthorize("hasRole('ADMIN, EMPRESA')")
     @PutMapping("/{id}")
     public ResponseEntity<EmpresaResponseDTO> atualizar(@PathVariable Long id, @Valid @RequestBody EmpresaRequestDTO request) {
         EmpresaResponseDTO atualizada = empresaService.atualizar(id, request);
         return ResponseEntity.ok(atualizada);
     }
 
+    @PreAuthorize("hasRole('ADMIN, EMPRESA')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
         empresaService.deletar(id);
