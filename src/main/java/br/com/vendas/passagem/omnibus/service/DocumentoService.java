@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import br.com.vendas.passagem.omnibus.annotation.Auditable;
 import br.com.vendas.passagem.omnibus.domain.Documento;
 import br.com.vendas.passagem.omnibus.domain.Usuario;
 import br.com.vendas.passagem.omnibus.domain.enums.TipoDocumento;
@@ -41,6 +42,7 @@ public class DocumentoService {
     }
 
     @Transactional
+    @Auditable(action = "CREATE", entity = "Documento")
     public DocumentoResponseDTO uploadDocumento(Long usuarioId, TipoDocumento tipoDocumento, MultipartFile arquivo) {
         try {
             ensureBucket();

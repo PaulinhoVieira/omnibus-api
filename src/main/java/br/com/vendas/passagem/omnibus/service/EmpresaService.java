@@ -3,6 +3,7 @@ package br.com.vendas.passagem.omnibus.service;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import br.com.vendas.passagem.omnibus.annotation.Auditable;
 import br.com.vendas.passagem.omnibus.domain.Empresa;
 import br.com.vendas.passagem.omnibus.domain.Usuario;
 import br.com.vendas.passagem.omnibus.dto.mapper.EmpresaMapper;
@@ -27,6 +28,7 @@ public class EmpresaService {
     }
 
     @Transactional
+    @Auditable(action = "CREATE", entity = "Empresa")
     public EmpresaResponseDTO criar(EmpresaRequestDTO empresaRequestDTO) {
         Usuario usuarioDono = this.obterUsuarioPorId(empresaRequestDTO.usuarioDonoId());
         Empresa empresaEntity = empresaMapper.toEntity(empresaRequestDTO, usuarioDono);
@@ -39,11 +41,13 @@ public class EmpresaService {
     }
     
     @Transactional(readOnly = true)
+    @Auditable(action = "READ", entity = "Empresa")
     public EmpresaResponseDTO obterPorIdResponseDTO(Long id) {
         return empresaMapper.toResponse(obterPorId(id));
     }
 
     @Transactional
+    @Auditable(action = "UPDATE", entity = "Empresa")
     public EmpresaResponseDTO atualizar(Long id, EmpresaRequestDTO empresaAtualizada) {
         Empresa empresaExistente = this.obterPorId(id);
         empresaExistente.setNomeFantasia(empresaAtualizada.nomeFantasia());
@@ -52,6 +56,7 @@ public class EmpresaService {
     }
     
     @Transactional
+    @Auditable(action = "DELETE", entity = "Empresa")
     public void deletar(Long id) {
         empresaRepository.delete(this.obterPorId(id));
     }

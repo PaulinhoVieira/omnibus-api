@@ -4,6 +4,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import br.com.vendas.passagem.omnibus.annotation.Auditable;
 import br.com.vendas.passagem.omnibus.domain.Usuario;
 import br.com.vendas.passagem.omnibus.domain.enums.TipoPerfil;
 import br.com.vendas.passagem.omnibus.dto.mapper.UsuarioMapper;
@@ -25,6 +26,7 @@ public class UsuarioService {
     }
 
     @Transactional
+    @Auditable(action = "CREATE", entity = "Usuario")
     public UsuarioResponseDTO criarUser(UsuarioRequestDTO usuario) {
         Usuario userEntity = usuarioMapper.toEntity(usuario);
         // Criptografar senha antes de salvar
@@ -33,11 +35,13 @@ public class UsuarioService {
     }
 
     @Transactional(readOnly = true)
+    @Auditable(action = "READ", entity = "Usuario")
     public UsuarioResponseDTO obterDTOporId(Long id) {
         return usuarioMapper.toDTO(obterPorId(id));
     }
 
     @Transactional
+    @Auditable(action = "UPDATE", entity = "Usuario")
     public UsuarioResponseDTO atualizarUser(Long id, UsuarioRequestDTO usuarioAtualizado) {
         Usuario usuarioExistente = obterPorId(id);
         usuarioExistente.setNome(usuarioAtualizado.nome());
@@ -48,6 +52,7 @@ public class UsuarioService {
     }
 
     @Transactional
+    @Auditable(action = "DELETE", entity = "Usuario")
     public void deletarUser(Long id) {
         usuarioRepository.delete(obterPorId(id));
     }
