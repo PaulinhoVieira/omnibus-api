@@ -1,4 +1,4 @@
-package br.com.vendas.passagem.omnibus.config.security.exception;
+package br.com.vendas.passagem.omnibus.exception;
 
 /**
  * Exceção lançada quando a geração do token JWT falha.

@@ -73,9 +73,7 @@ config/
 └── security/
     ├── SecurityConfigurations.java                    # Configurações Spring Security
     ├── TokenFilter.java                               # Filtro JWT
-    ├── TokenService.java                              # Serviço de geração/validação tokens
-    └── exception/
-        └── TokenGenerationException.java              # Exceção customizada para token
+    └── TokenService.java                              # Serviço de geração/validação tokens
 ```
 
 **Subpastas e Responsabilidades:**
@@ -90,14 +88,11 @@ config/
 - **SecurityConfigurations.java:** Configuração centralizada do Spring Security (autenticação, autorização, CORS, HTTPS)
 - **TokenService.java:** Serviço responsável por geração, validação e renovação de tokens JWT
 - **TokenFilter.java:** Filtro customizado que intercepta requisições e valida tokens JWT
-- **exception/TokenGenerationException.java:** Exceção lançada quando há falha na geração ou validação de tokens
 
 **Responsabilidade:** 
 - Configuração de segurança e autenticação baseada em JWT
 - Integração com serviços externos (MinIO) para armazenamento em nuvem
 - Auditoria automática com Hibernate Envers e AOP
-
----, incluindo enumerações e histórico de auditoria.
 
 ```
 domain/
@@ -196,7 +191,8 @@ exception/
 ├── GlobalExceptionHandler.java                        # Handler global de exceções
 ├── InvalidDtoException.java                           # Exceção para DTO inválido
 ├── MinioStorageException.java                         # Exceção de armazenamento MinIO
-└── ResourceNotFoundException.java                     # Exceção para recurso não encontrado
+├── ResourceNotFoundException.java                     # Exceção para recurso não encontrado
+└── TokenGenerationException.java                      # Exceção para falha em geração de token
 ```
 
 **Exceções Customizadas:**
@@ -207,6 +203,7 @@ exception/
 - **DocumentoUploadException.java:** Lançada quando falha upload de documento
 - **FileValidationException.java:** Lançada quando arquivo não atende critérios (tipo, tamanho, etc)
 - **MinioStorageException.java:** Lançada quando há erro ao comunicar com MinIO
+- **TokenGenerationException.java:** Lançada quando há falha na geração ou validação de tokens JWT
 
 **Handler Global:**
 - **GlobalExceptionHandler.java:** Classe anotada com `@RestControllerAdvice` que centraliza tratamento de todas as exceções
@@ -396,13 +393,107 @@ Controller → Service → Repository → Database
 
 ---
 
-## 📚 Próximos Passos Recomendados
+## 🧪 Testes
+
+### Estrutura de Testes
+```
+src/test/java/br/com/vendas/passagem/omnibus/
+└── controller/
+    ├── EmpresaControllerTest.java                     # Testes unitários do EmpresaController
+    └── UsuarioControllerTest.java                     # Testes unitários do UsuarioController
+```
+
+### Configuração de Testes
+- **Framework:** JUnit 5 (Jupiter)
+- **Mocking:** Mockito com anotação `@MockitoBean`
+- **Test Context:** `@WebMvcTest` para testes de controller em camada isolada
+- **Security Testing:** `@WithMockUser` para simulação de usuários autenticados
+
+### Testes Implementados
+
+#### **EmpresaControllerTest.java**
+- ✅ `deveCriarEmpresaComSucessoComoAdmin` - Criação de empresa por administrador
+- ✅ `deveCriarEmpresaComSucessoComoPassageiro` - Criação de empresa por passageiro
+- ✅ `deveRetornar400QuandoCriarComDadosInvalidos` - Validação de dados obrigatórios
+- ✅ `deveRetornar400QuandoCriarComCNPJInvalido` - Validação de formato CNPJ
+- ✅ `deveBuscarEmpresaPorIdComoAdmin` - Busca de empresa existente
+- ✅ `deveAtualizarEmpresaComSucessoComoAdmin` - Atualização por administrador
+- ✅ `deveAtualizarEmpresaComSucessoComoEmpresa` - Atualização por empresa
+- ✅ `deveDeletarEmpresaComSucessoComoAdmin` - Deleção por administrador
+- ✅ `deveDeletarEmpresaComSucessoComoEmpresa` - Deleção por empresa
+
+#### **UsuarioControllerTest.java**
+- ✅ `deveBuscarUsuarioPorIdComoAdmin` - Busca de usuário por administrador
+- ✅ `deveAtualizarUsuarioComSucesso` - Atualização de dados do usuário
+- ✅ `deveRetornar400QuandoAtualizarComDadosInvalidos` - Validação de dados obrigatórios
+- ✅ `deveDeletarUsuarioComSucesso` - Deleção de usuário
+- ✅ `deveFazerUploadDeDocumentoComSucesso` - Upload de documento com validações
+
+### Mocks Configurados
+- **UsuarioService:** Serviço de usuários
+- **DocumentoService:** Serviço de documentos
+- **EmpresaService:** Serviço de empresas
+- **TokenService:** Serviço de geração/validação de tokens
+- **UsuarioRepository:** Repositório de usuários
+
+### Cobertura de Testes
+- **Total de testes:** 14 (9 para Empresa + 5 para Usuário)
+- **Status:** ✅ Todos os testes passando
+- **Taxa de cobertura:** Controller layer
+
+### Nota sobre Testes de Autorização
+Testes de autorização (401/403) foram comentados pois `@AutoConfigureMockMvc(addFilters = false)` desabilita filtros de segurança. Para testar autorização completa, é necessário:
+1. Usar `@SpringBootTest` para teste de integração
+2. Remover `addFilters = false`
+3. Configurar usuários autenticados adequadamente
+
+---
+
+## 📝 Última Atualização
 
 1. Documentar DTOs específicos (Request/Response)
 2. Criar diagrama ER do banco de dados
 3. Documentar endpoints da API (Swagger/OpenAPI)
 4. Adicionar testes de integração
 5. Documentar regras de negócio específicas
+
+---
+
+## � Melhorias Recentes (Fevereiro 2026)
+
+### ✅ Migração de Anotações Spring Security
+- **Atualizado:** `@MockBean` → `@MockitoBean` (Spring Boot 3.4.0+)
+- **Motivo:** `@MockBean` foi depreciado e será removido nas versões futuras
+- **Arquivos afetados:** 
+  - `UsuarioControllerTest.java`
+  - `EmpresaControllerTest.java`
+
+### ✅ Reorganização de Exceções
+- **Movido:** `TokenGenerationException` de `config/security/exception/` para `exception/`
+- **Motivo:** Centralizar todas as exceções customizadas no mesmo diretório (`exception/`)
+- **Benefício:** Estrutura mais clara e organizada, seguindo padrão do projeto
+
+### ✅ Testes Unitários
+- **Implementados:** 14 testes unitários para controllers
+- **Framework:** JUnit 5 + Mockito com `@MockitoBean`
+- **Status:** Todos os testes passando (BUILD SUCCESS)
+
+### ✅ Ajustes no Fixture de Testes
+- **Corrigido:** CPF de teste "12345678901" → "12345678909" (CPF válido)
+- **Motivo:** Passagem em validação `@CPF` do Hibernate Validator
+
+---
+
+## 📚 Próximos Passos Recomendados
+
+1. Implementar testes de integração completos com `@SpringBootTest`
+2. Adicionar testes de autorização (401/403) com contexto real
+3. Documentar endpoints da API com Swagger/OpenAPI 3.0
+4. Adicionar testes de service layer
+5. Implementar testes de repository layer com testcontainers
+6. Adicionar métricas de cobertura de testes (JaCoCo)
+7. Documentar regras de negócio específicas por serviço
+8. Criar diagrama ER do banco de dados (ERDPlus ou similar)
 
 ---
 
@@ -414,5 +505,5 @@ Controller → Service → Repository → Database
 
 ---
 
-**Última atualização:** Janeiro de 2026  
+**Última atualização:** Fevereiro de 2026  
 **Versão do Projeto:** 0.0.1-SNAPSHOT
