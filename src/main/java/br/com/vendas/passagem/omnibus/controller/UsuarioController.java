@@ -78,10 +78,10 @@ public class UsuarioController {
 
     @PreAuthorize("isAuthenticated()")
     @PostMapping("/perfil/alternar/{nomePerfil}")
-    public ResponseEntity<UsuarioResponseDTO> alternarPerfilAtivo(
+    public ResponseEntity<String> alternarPerfilAtivo(
             @PathVariable String nomePerfil,
             @AuthenticationPrincipal Usuario usuarioLogado) {
-        UsuarioResponseDTO usuarioAtualizado = usuarioService.alternarPerfilAtivo(usuarioLogado, nomePerfil);
-        return ResponseEntity.ok(usuarioAtualizado);
+        String token = usuarioService.alternarPerfilAtivo(usuarioLogado, nomePerfil);
+        return ResponseEntity.ok(token);
     }
 }

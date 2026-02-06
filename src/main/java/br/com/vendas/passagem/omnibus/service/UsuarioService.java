@@ -111,7 +111,7 @@ public class UsuarioService {
 
     @Transactional
     @Auditable(action = "UPDATE", entity = "Usuario")
-    public UsuarioResponseDTO alternarPerfilAtivo(Usuario usuarioLogado, String nomePerfil) {
+    public String alternarPerfilAtivo(Usuario usuarioLogado, String nomePerfil) {
         // 1. Validar se o nome do perfil é válido
         TipoPerfil perfilDesejado;
         try {
@@ -140,7 +140,7 @@ public class UsuarioService {
         usuarioAtualizado.setPerfilAtivo(perfilDesejado);
         usuarioRepository.save(usuarioAtualizado);
 
-        // 5. Retornar o usuário atualizado
-        return usuarioMapper.toDTO(usuarioAtualizado);
+        // 5. Retornar novo token com o perfil ativo atualizado
+        return tokenService.gerarTokenComPerfilAtivo(usuarioAtualizado);
     }
 }
