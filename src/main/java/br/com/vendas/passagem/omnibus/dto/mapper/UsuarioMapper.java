@@ -1,8 +1,12 @@
 package br.com.vendas.passagem.omnibus.dto.mapper;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.springframework.stereotype.Component;
 
 import br.com.vendas.passagem.omnibus.domain.Usuario;
+import br.com.vendas.passagem.omnibus.domain.enums.TipoPerfil;
 import br.com.vendas.passagem.omnibus.dto.request.UsuarioRequestDTO;
 import br.com.vendas.passagem.omnibus.dto.response.UsuarioResponseDTO;
 
@@ -15,6 +19,11 @@ public class UsuarioMapper {
         usuario.setEmail(dto.email());
         usuario.setSenha(dto.senha()); // Lembre-se que no service você vai criptografar
         usuario.setCpf(dto.cpf());
+        
+        Set<TipoPerfil> perfis = new HashSet<>();
+        perfis.add(TipoPerfil.PASSAGEIRO);
+        usuario.setPerfis(perfis);
+        
         return usuario;
     }
     

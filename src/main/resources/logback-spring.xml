@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!-- Define as propriedades básicas -->
+    <property name="LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss} - %logger{36} - %msg%n"/>
+    
+    <!-- Console Appender - para desenvolvimento -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+        </encoder>
+    </appender>
+    
+    <!-- Sentry Appender - captura logs de WARN e ERROR para o Sentry -->
+    <appender name="SENTRY" class="io.sentry.logback.SentryAppender">
+        <!-- Define o nível mínimo de log para enviar ao Sentry -->
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>WARN</level>
+        </filter>
+        
+        <!-- Configurações do Sentry Appender -->
+        <options>
+            <!-- O DSN é lido do application.properties (sentry.dsn) -->
+            
+            <!-- Capturar breadcrumbs de logs INFO para contexto -->
+            <minimumBreadcrumbLevel>INFO</minimumBreadcrumbLevel>
+            
+            <!-- Capturar eventos de WARN e ERROR -->
+            <minimumEventLevel>WARN</minimumEventLevel>
+            
+            <!-- Incluir parâmetros do MDC (Mapped Diagnostic Context) -->
+            <includeTags>true</includeTags>
+        </options>
+    </appender>
+    
+    <!-- Logger específico para a aplicação -->
+    <logger name="br.com.vendas.passagem.omnibus" level="INFO" additivity="false">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="SENTRY"/>
+    </logger>
+    
+    <!-- Logger para Spring Framework (menos verboso) -->
+    <logger name="org.springframework" level="WARN" additivity="false">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="SENTRY"/>
+    </logger>
+    
+    <!-- Logger para Hibernate (SQL e transações) -->
+    <logger name="org.hibernate" level="WARN" additivity="false">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="SENTRY"/>
+    </logger>
+    
+    <!-- Logger para MinIO (storage) -->
+    <logger name="io.minio" level="WARN" additivity="false">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="SENTRY"/>
+    </logger>
+    
+    <!-- Logger raiz - captura tudo que não foi especificado -->
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="SENTRY"/>
+    </root>
+</configuration>

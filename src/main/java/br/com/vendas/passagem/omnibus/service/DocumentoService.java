@@ -1,6 +1,9 @@
 package br.com.vendas.passagem.omnibus.service;
 
+import java.io.IOException;
 import java.io.InputStream;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -9,15 +12,18 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import br.com.vendas.passagem.omnibus.annotation.Auditable;
 import br.com.vendas.passagem.omnibus.domain.Documento;
 import br.com.vendas.passagem.omnibus.domain.Usuario;
 import br.com.vendas.passagem.omnibus.domain.enums.TipoDocumento;
 import br.com.vendas.passagem.omnibus.dto.response.DocumentoResponseDTO;
 import br.com.vendas.passagem.omnibus.repository.DocumentoRepository;
+import br.com.vendas.passagem.omnibus.exception.DocumentoUploadException;
 import io.minio.BucketExistsArgs;
 import io.minio.MakeBucketArgs;
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
+import io.minio.errors.MinioException;
 
 @Service
 public class DocumentoService {
@@ -36,6 +42,7 @@ public class DocumentoService {
     }
 
     @Transactional
+    @Auditable(action = "CREATE", entity = "Documento")
     public DocumentoResponseDTO uploadDocumento(Long usuarioId, TipoDocumento tipoDocumento, MultipartFile arquivo) {
         try {
             ensureBucket();
@@ -64,11 +71,11 @@ public class DocumentoService {
             Documento salvo = documentoRepository.save(documento);
             return new DocumentoResponseDTO(salvo.getId(), usuario.getId(), salvo.getTipo(), salvo.getNomeArquivoMinio(), salvo.getContentType());
         } catch (Exception e) {
-            throw new RuntimeException("Erro ao fazer upload do documento", e);
+            throw new DocumentoUploadException("Erro ao fazer upload do documento", e);
         }
     }
 
-    private void ensureBucket() throws Exception {
+    private void ensureBucket() throws MinioException, InvalidKeyException, IOException, NoSuchAlgorithmException {
         boolean exists = minioClient.bucketExists(BucketExistsArgs.builder().bucket(bucketName).build());
         if (!exists) {
             minioClient.makeBucket(MakeBucketArgs.builder().bucket(bucketName).build());

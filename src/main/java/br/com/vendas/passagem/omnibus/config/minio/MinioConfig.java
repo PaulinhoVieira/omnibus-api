@@ -1,4 +1,4 @@
-package br.com.vendas.passagem.omnibus.config;
+package br.com.vendas.passagem.omnibus.config.minio;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;

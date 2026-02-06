@@ -6,9 +6,14 @@ import java.time.LocalDateTime;
 
 import br.com.vendas.passagem.omnibus.domain.enums.TipoPerfil;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import jakarta.persistence.*;
 
@@ -19,7 +24,7 @@ import jakarta.persistence.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(of = "id")
-public class Usuario {
+public class Usuario implements UserDetails {
 
     @Id
     @Column(name = "id")
@@ -47,17 +52,63 @@ public class Usuario {
     @Column(name = "perfil")
     private Set<TipoPerfil> perfis = new HashSet<>();
 
-    @OneToMany(mappedBy = "usuarioDono", cascade = CascadeType.ALL)
+    @Column(name = "perfil_ativo", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private TipoPerfil perfilAtivo = TipoPerfil.PASSAGEIRO;
+
+    @OneToMany(mappedBy = "usuarioDono", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Empresa> empresas;
 
-    @OneToMany(mappedBy = "passageiro", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "passageiro", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Passagen> passagens;
 
-    @OneToOne(mappedBy = "usuario", cascade = CascadeType.ALL)
+    @OneToOne(mappedBy = "usuario", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Documento documento;
 
-    // Método utilitário para o seu Use Case
+    // Métodos utilitários para gerenciar perfis
     public boolean possuiPerfil(TipoPerfil perfil) {
         return perfis.contains(perfil);
+    }
+
+    public void adicionarPerfil(TipoPerfil perfil) {
+        this.perfis.add(perfil);
+    }
+
+    public void removerPerfil(TipoPerfil perfil) {
+        this.perfis.remove(perfil);
+    }
+
+    // configuraçoes de segurança
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return perfis.stream()
+                .map(perfil -> new SimpleGrantedAuthority("ROLE_" + perfil.name()))
+                .toList();
+    }
+
+    @Override
+    public String getPassword() {
+        return senha;
+    }
+
+    @Override
+    public String getUsername() {
+        return email;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true;
     }
 }
