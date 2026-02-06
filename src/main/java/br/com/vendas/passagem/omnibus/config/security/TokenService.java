@@ -41,6 +41,26 @@ public class TokenService {
         }
     }
 
+    public String gerarTokenComPerfilAtivo(Usuario usuario) {
+        try {
+            TipoPerfil perfilAtivo = usuario.getPerfilAtivo();
+            if (!usuario.possuiPerfil(perfilAtivo)) {
+                throw new IllegalArgumentException("Usuário não possui o perfil ativo configurado");
+            }
+
+            Algorithm algorithm = Algorithm.HMAC256(secret);
+            return JWT.create()
+                .withIssuer("omnibus-api")
+                .withSubject(String.valueOf(usuario.getId()))
+                .withClaim("email", usuario.getEmail())
+                .withClaim("perfil", perfilAtivo.name())
+                .withExpiresAt(expiration())
+                .sign(algorithm);
+        } catch (JWTCreationException exception) {
+            throw new TokenGenerationException("Erro ao gerar token JWT", exception);
+        }
+    }
+
     public String validateToken(String token){
         try {
             Algorithm algorithm = Algorithm.HMAC256(secret);

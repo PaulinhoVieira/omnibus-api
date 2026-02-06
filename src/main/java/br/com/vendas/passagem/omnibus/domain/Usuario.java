@@ -52,6 +52,10 @@ public class Usuario implements UserDetails {
     @Column(name = "perfil")
     private Set<TipoPerfil> perfis = new HashSet<>();
 
+    @Column(name = "perfil_ativo", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private TipoPerfil perfilAtivo = TipoPerfil.PASSAGEIRO;
+
     @OneToMany(mappedBy = "usuarioDono", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Empresa> empresas;
 

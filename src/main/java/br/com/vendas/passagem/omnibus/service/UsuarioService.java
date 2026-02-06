@@ -108,4 +108,39 @@ public class UsuarioService {
         // 5. Gerar e retornar token
         return tokenService.gerarToken((Usuario) authentication.getPrincipal(), authRequest.perfilDesejado());
     }
+
+    @Transactional
+    @Auditable(action = "UPDATE", entity = "Usuario")
+    public UsuarioResponseDTO alternarPerfilAtivo(Usuario usuarioLogado, String nomePerfil) {
+        // 1. Validar se o nome do perfil é válido
+        TipoPerfil perfilDesejado;
+        try {
+            perfilDesejado = TipoPerfil.valueOf(nomePerfil.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new BadCredentialsException("Perfil '" + nomePerfil + "' não é válido. Perfis disponíveis: PASSAGEIRO, EMPRESA, ADMIN");
+        }
+
+        // 2. Validar se o usuário possui este perfil
+        if (!usuarioLogado.possuiPerfil(perfilDesejado)) {
+            throw new BadCredentialsException("Você não possui o perfil '" + nomePerfil + "'. Seus perfis: " + usuarioLogado.getPerfis());
+        }
+
+        // 3. Se o perfil for EMPRESA, validar se tem empresa associada
+        if (perfilDesejado == TipoPerfil.EMPRESA) {
+            Usuario usuarioComEmpresas = usuarioRepository.findByEmailWithEmpresas(usuarioLogado.getEmail())
+                    .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+            
+            if (usuarioComEmpresas.getEmpresas() == null || usuarioComEmpresas.getEmpresas().isEmpty()) {
+                throw new BadCredentialsException("Você não possui empresa cadastrada para usar este perfil");
+            }
+        }
+
+        // 4. Atualizar o perfil ativo no banco
+        Usuario usuarioAtualizado = obterPorId(usuarioLogado.getId());
+        usuarioAtualizado.setPerfilAtivo(perfilDesejado);
+        usuarioRepository.save(usuarioAtualizado);
+
+        // 5. Retornar o usuário atualizado
+        return usuarioMapper.toDTO(usuarioAtualizado);
+    }
 }

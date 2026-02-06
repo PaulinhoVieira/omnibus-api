@@ -75,4 +75,13 @@ public class UsuarioController {
         DocumentoResponseDTO salvo = documentoService.uploadDocumento(id, tipoDocumento, arquivo);
         return ResponseEntity.ok(salvo);
     }
+
+    @PreAuthorize("isAuthenticated()")
+    @PostMapping("/perfil/alternar/{nomePerfil}")
+    public ResponseEntity<UsuarioResponseDTO> alternarPerfilAtivo(
+            @PathVariable String nomePerfil,
+            @AuthenticationPrincipal Usuario usuarioLogado) {
+        UsuarioResponseDTO usuarioAtualizado = usuarioService.alternarPerfilAtivo(usuarioLogado, nomePerfil);
+        return ResponseEntity.ok(usuarioAtualizado);
+    }
 }
