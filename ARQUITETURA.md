@@ -94,6 +94,8 @@ config/
 - Integração com serviços externos (MinIO) para armazenamento em nuvem
 - Auditoria automática com Hibernate Envers e AOP
 
+### 3. **domain/** - Entidades do Domínio
+
 ```
 domain/
 ├── Documento.java                                      # Entidade Documento
@@ -106,9 +108,9 @@ domain/
 ├── audit/
 │   └── AuditLog.java                                  # Entidade de logs de auditoria
 └── enums/
-    ├── Status.java                                    # Enum com status (ATIVO, INATIVO, etc)
-    ├── TipoDocumento.java                             # Enum tipo de documento (CPF, CNPJ, RG)
-    └── TipoPerfil.java                                # Enum perfil de usuário (ADMIN, USER, etc)
+   ├── Status.java                                    # Enum status (PENDENTE, PAGA, CANCELADA)
+   ├── TipoDocumento.java                             # Enum tipo de documento (RG, CNH, PASSAPORTE, CARTEIRA_ESTUDANTE, CNPJ_DOC)
+   └── TipoPerfil.java                                # Enum perfil de usuário (PASSAGEIRO, EMPRESA, ADMIN)
 ```
 
 **Entidades Principais:**
@@ -127,9 +129,9 @@ domain/
 
 #### **domain/enums/**
 Enumerações que representam valores fixos de domínio:
-- **Status.java:** Define estados possíveis de registros (ex: ATIVO, INATIVO, SUSPENSO)
-- **TipoDocumento.java:** Define tipos de documentos válidos (CPF, CNPJ, RG, CNH)
-- **TipoPerfil.java:** Define papéis de usuários no sistema (ADMINISTRADOR, GERENTE, USUARIO)
+- **Status.java:** Define estados possíveis de uma passagem (PENDENTE, PAGA, CANCELADA)
+- **TipoDocumento.java:** Define tipos de documentos válidos (RG, CNH, PASSAPORTE, CARTEIRA_ESTUDANTE, CNPJ_DOC)
+- **TipoPerfil.java:** Define papéis de usuários no sistema (PASSAGEIRO, EMPRESA, ADMIN)
 
 **Responsabilidade:** 
 - Modelar o domínio da aplicação com precisão
@@ -137,7 +139,8 @@ Enumerações que representam valores fixos de domínio:
 - Validações em nível de domínio
 - Relacionamentos entre entidades (1:N, M:N)
 - Encapsulamento de lógica de identidade e estado
-### 4. **domain/** - Entidades do Domínio, separados por propósito (request/response) com mapeadores customizados.
+
+### 4. **dto/** - Data Transfer Objects (Request/Response)
 
 ```
 dto/
@@ -145,11 +148,11 @@ dto/
 │   ├── EmpresaMapper.java                             # Mapeador Empresa ↔ EmpresaDTO
 │   └── UsuarioMapper.java                             # Mapeador Usuario ↔ UsuarioDTO
 ├── request/
-│   ├── AuthenticationDTO.java                         # Dados para login (usuario + senha)
+│   ├── AuthenticationDTO.java                         # Dados para login (email, senha, perfilDesejado)
 │   ├── EmpresaRequestDTO.java                         # Dados de entrada para criar/atualizar empresa
 │   └── UsuarioRequestDTO.java                         # Dados de entrada para criar/atualizar usuário
 └── response/
-    ├── DocumentoResponseDTO.java                      # Dados de saída para documento
+   ├── DocumentoResponseDTO.java                      # Dados de saída para documento (id, usuarioId, tipo, nomeArquivoMinio, contentType)
     ├── EmpresaResponseDTO.java                        # Dados de saída para empresa
     ├── ErrorResponseDTO.java                          # Resposta padrão de erro
     └── UsuarioResponseDTO.java                        # Dados de saída para usuário
@@ -165,14 +168,14 @@ Mapeadores que convertem entre entidades de domínio e DTOs:
 
 #### **dto/request/**
 DTOs de entrada que recebem dados do cliente:
-- **AuthenticationDTO.java:** Contém credenciais para login (username, password)
+- **AuthenticationDTO.java:** Contém credenciais para login (email, senha, perfilDesejado)
 - **EmpresaRequestDTO.java:** Recebe dados para criação/atualização de empresa (nome, CNPJ, etc)
 - **UsuarioRequestDTO.java:** Recebe dados para criação/atualização de usuário (nome, email, etc)
 - Incluem validações com anotações do Jakarta Validation (@NotNull, @Email, @Size, etc)
 
 #### **dto/response/**
 DTOs de saída que retornam dados ao cliente:
-- **DocumentoResponseDTO.java:** Retorna dados públicos de documento (ID, tipo, número)
+- **DocumentoResponseDTO.java:** Retorna dados do documento (id, usuarioId, tipo, nomeArquivoMinio, contentType)
 - **EmpresaResponseDTO.java:** Retorna informações públicas de empresa (ID, nome, CNPJ, status)
 - **UsuarioResponseDTO.java:** Retorna informações públicas de usuário (ID, nome, email, perfil)
 - **ErrorResponseDTO.java:** Resposta padronizada para erros (código, mensagem, timestamp)
@@ -180,7 +183,11 @@ DTOs de saída que retornam dados ao cliente:
 
 **Responsabilidade:** 
 - Controlar dados expostos pela API REST
-- Separar modelo de domínio da camada  e handler global para tratamento de erros.
+- Separar modelo de domínio da camada de apresentação
+- Facilitar versionamento da API
+- Validações de entrada
+
+### 5. **exception/** - Tratamento de Exceções
 
 ```
 exception/
@@ -220,37 +227,20 @@ exception/
 - Mapeamento de exceções para códigos HTTP apropriados
 
 ---
-
-### 5. **dto/** - Data Transfer Objects
-Objetos para transferência de dados entre camadas.
-
-```
-dto/
-├── mapper/                                             # Conversores entre Domain e DTO
-├── request/                                            # DTOs de entrada (requisições)
-└── response/                                           # DTOs de saída (respostas)
-```
-
-**Responsabilidade:** 
-- Controlar dados expostos pela API
-- Separar modelo de domínio da camada de apresentação
-- Facilitar versionamento da API
-- Validações de entrada
-
----
-
-### 6. **exception/** - Tratamento de Exceções
-Gerenciamento centralizado de exceções.
+### 6. **controller/** - Controllers REST
+Camada responsável por expor endpoints e orquestrar chamadas para services.
 
 ```
-exception/
-└── [Classes de exceções customizadas]
+controller/
+├── AuthenticationController.java                      # Autenticação/login
+├── EmpresaController.java                             # Endpoints de empresas
+└── UsuarioController.java                             # Endpoints de usuários
 ```
 
-**Responsabilidade:** 
-- Definir exceções de negócio
-- Tratamento global de erros
-- Padronização de respostas de erro
+**Responsabilidade:**
+- Definir rotas e contratos HTTP
+- Validar entrada (DTOs)
+- Delegar regras de negócio aos services
 
 ---
 
@@ -300,7 +290,8 @@ resources/db/migration/
 ├── V1__criando_estrutura_inicial.sql                  # Estrutura inicial do BD
 ├── V2__alterando_ids_para_long.sql                    # Alteração de tipos de ID
 ├── V3__corrigir_auto_increment_ids.sql               # Correção auto-increment
-└── V4__create_audit_logs_table.sql                   # Tabela de logs de auditoria
+├── V4__create_audit_logs_table.sql                   # Tabela de logs de auditoria
+└── V5__add_perfil_ativo_column.sql                   # Coluna perfil_ativo em usuarios
 ```
 
 **Estratégia:** Versionamento incremental com Flyway para controle de schema.
@@ -340,7 +331,7 @@ Controller → Service → Repository → Database
 | Framework | Spring Boot 3.5.10 |
 | Linguagem | Java 21 |
 | Persistência | JPA/Hibernate + Envers |
-| Banco de Dados | MySQL (via docker-compose) |
+| Banco de Dados | PostgreSQL (via docker-compose) |
 | Migração de BD | Flyway |
 | Armazenamento | MinIO |
 | Build Tool | Maven |
@@ -459,7 +450,7 @@ Testes de autorização (401/403) foram comentados pois `@AutoConfigureMockMvc(a
 
 ---
 
-## � Melhorias Recentes (Fevereiro 2026)
+## ✅ Melhorias Recentes (Fevereiro 2026)
 
 ### ✅ Migração de Anotações Spring Security
 - **Atualizado:** `@MockBean` → `@MockitoBean` (Spring Boot 3.4.0+)
